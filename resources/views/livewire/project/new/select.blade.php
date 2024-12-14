@@ -12,7 +12,7 @@
     <div class="pb-4">Deploy resources, like Applications, Databases, Services...</div>
     <div x-data="searchResources()">
         @if ($current_step === 'type')
-            <div x-data="{ isSticky: false }" x-init="window.addEventListener('scroll', () => isSticky = window.pageYOffset > 100)" class="sticky top-0 z-50 py-2">
+            <div x-init="window.addEventListener('scroll', () => isSticky = window.pageYOffset > 100)" class="sticky top-0 z-50 py-2">
                 <input autocomplete="off" x-ref="searchInput" class="input-sticky"
                     :class="{ 'input-sticky-active': isSticky }" x-model="search" placeholder="Type / to search..."
                     @keydown.window.slash.prevent="$refs.searchInput.focus()">
@@ -137,6 +137,7 @@
                     return {
                         search: '',
                         loading: false,
+                        isSticky: false,
                         services: [],
                         gitBasedApplications: [],
                         dockerBasedApplications: [],
@@ -169,7 +170,8 @@
                             }
                             const filtered = Object.values(items).filter(item => {
                                 return (item.name?.toLowerCase().includes(searchLower) ||
-                                    item.description?.toLowerCase().includes(searchLower))
+                                    item.description?.toLowerCase().includes(searchLower) ||
+                                    item.slogan?.toLowerCase().includes(searchLower))
                             })
                             return isSort ? filtered.sort(sortFn) : filtered;
                         },

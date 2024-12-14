@@ -18,18 +18,17 @@ class ServicesController extends Controller
 {
     private function removeSensitiveData($service)
     {
-        $token = auth()->user()->currentAccessToken();
         $service->makeHidden([
             'id',
         ]);
-        if ($token->can('view:sensitive')) {
-            return serializeApiResponse($service);
+        if (request()->attributes->get('can_read_sensitive', false) === false) {
+            $service->makeHidden([
+                'docker_compose_raw',
+                'docker_compose',
+                'value',
+                'real_value',
+            ]);
         }
-
-        $service->makeHidden([
-            'docker_compose_raw',
-            'docker_compose',
-        ]);
 
         return serializeApiResponse($service);
     }
@@ -1073,7 +1072,7 @@ class ServicesController extends Controller
         if (! $service) {
             return response()->json(['message' => 'Service not found.'], 404);
         }
-        if (str($service->status())->contains('running')) {
+        if (str($service->status)->contains('running')) {
             return response()->json(['message' => 'Service is already running.'], 400);
         }
         StartService::dispatch($service);
@@ -1151,7 +1150,7 @@ class ServicesController extends Controller
         if (! $service) {
             return response()->json(['message' => 'Service not found.'], 404);
         }
-        if (str($service->status())->contains('stopped') || str($service->status())->contains('exited')) {
+        if (str($service->status)->contains('stopped') || str($service->status)->contains('exited')) {
             return response()->json(['message' => 'Service is already stopped.'], 400);
         }
         StopService::dispatch($service);

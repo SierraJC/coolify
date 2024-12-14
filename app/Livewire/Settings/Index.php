@@ -7,7 +7,7 @@ use App\Models\InstanceSettings;
 use App\Models\Server;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Livewire\Attributes\Locked;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
@@ -17,17 +17,11 @@ class Index extends Component
 
     protected Server $server;
 
-    #[Locked]
-    public $timezones;
-
     #[Validate('boolean')]
     public bool $is_auto_update_enabled;
 
     #[Validate('nullable|string|max:255')]
     public ?string $fqdn = null;
-
-    #[Validate('nullable|string|max:255')]
-    public ?string $resale_license = null;
 
     #[Validate('required|integer|min:1025|max:65535')]
     public int $public_port_min;
@@ -86,7 +80,6 @@ class Index extends Component
         } else {
             $this->settings = instanceSettings();
             $this->fqdn = $this->settings->fqdn;
-            $this->resale_license = $this->settings->resale_license;
             $this->public_port_min = $this->settings->public_port_min;
             $this->public_port_max = $this->settings->public_port_max;
             $this->custom_dns_servers = $this->settings->custom_dns_servers;
@@ -101,10 +94,18 @@ class Index extends Component
             $this->is_api_enabled = $this->settings->is_api_enabled;
             $this->auto_update_frequency = $this->settings->auto_update_frequency;
             $this->update_check_frequency = $this->settings->update_check_frequency;
-            $this->timezones = collect(timezone_identifiers_list())->sort()->values()->toArray();
             $this->instance_timezone = $this->settings->instance_timezone;
             $this->disable_two_step_confirmation = $this->settings->disable_two_step_confirmation;
         }
+    }
+
+    #[Computed]
+    public function timezones(): array
+    {
+        return collect(timezone_identifiers_list())
+            ->sort()
+            ->values()
+            ->toArray();
     }
 
     public function instantSave($isSave = true)
@@ -117,7 +118,6 @@ class Index extends Component
         }
 
         $this->settings->fqdn = $this->fqdn;
-        $this->settings->resale_license = $this->resale_license;
         $this->settings->public_port_min = $this->public_port_min;
         $this->settings->public_port_max = $this->public_port_max;
         $this->settings->custom_dns_servers = $this->custom_dns_servers;
